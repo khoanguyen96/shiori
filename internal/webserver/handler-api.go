@@ -133,6 +133,7 @@ func (h *handler) apiGetBookmarks(w http.ResponseWriter, r *http.Request, ps htt
 	strPage := r.URL.Query().Get("page")
 	strTags := r.URL.Query().Get("tags")
 	strExcludedTags := r.URL.Query().Get("exclude")
+	strSortBy := r.URL.Query().Get("sortBy")
 
 	tags := strings.Split(strTags, ",")
 	if len(tags) == 1 && tags[0] == "" {
@@ -149,6 +150,15 @@ func (h *handler) apiGetBookmarks(w http.ResponseWriter, r *http.Request, ps htt
 		page = 1
 	}
 
+	sortOrderMethod := database.ByLastAdded
+	switch strSortBy {
+		case "modified":
+			sortOrderMethod = database.ByLastModified
+		case "added":
+		default:
+			sortOrderMethod = database.ByLastAdded
+	}
+
 	// Prepare filter for database
 	searchOptions := database.GetBookmarksOptions{
 		Tags:         tags,
@@ -156,7 +166,7 @@ func (h *handler) apiGetBookmarks(w http.ResponseWriter, r *http.Request, ps htt
 		Keyword:      keyword,
 		Limit:        30,
 		Offset:       (page - 1) * 30,
-		OrderMethod:  database.ByLastAdded,
+		OrderMethod:  sortOrderMethod,
 	}
 
 	// Calculate max page
