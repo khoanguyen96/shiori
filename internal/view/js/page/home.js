@@ -1,7 +1,11 @@
 var template = `
 <div id="page-home">
     <div class="page-header">
-        <input type="text" placeholder="Search url, keyword or tags" v-model.trim="search" @focus="$event.target.select()" @keyup.enter="searchBookmarks"/>
+				<input type="text" placeholder="Search url, keyword or tags" v-model.trim="search" @focus="$event.target.select()" @keyup.enter="searchBookmarks"/>
+				<select v-model="sortBy" @change="searchBookmarks">
+					<option value="added">Last Added</option>
+					<option value="modified">Last Modified</option>
+				</select>
         <a title="Refresh storage" @click="reloadData">
             <i class="fas fa-fw fa-sync-alt" :class="loading && 'fa-spin'"></i>
         </a>
@@ -101,6 +105,7 @@ export default {
 			selection: [],
 
 			search: "",
+			sortBy: "added",
 			page: 0,
 			maxPage: 0,
 			bookmarks: [],
@@ -163,6 +168,7 @@ export default {
 
 			// Parse search query
 			var keyword = this.search,
+				sortBy = this.sortBy,
 				rxExcludeTagA = /(^|\s)-tag:["']([^"']+)["']/i, // -tag:"with space"
 				rxExcludeTagB = /(^|\s)-tag:(\S+)/i, // -tag:without-space
 				rxIncludeTagA = /(^|\s)tag:["']([^"']+)["']/i, // tag:"with space"
@@ -200,6 +206,7 @@ export default {
 			var url = new URL("api/bookmarks", document.baseURI);
 			url.search = new URLSearchParams({
 				keyword: keyword,
+				sortBy: sortBy,
 				tags: tags.join(","),
 				exclude: excludedTags.join(","),
 				page: this.page
